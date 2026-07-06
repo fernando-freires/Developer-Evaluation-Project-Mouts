@@ -75,3 +75,35 @@ This section includes links to the detailed documentation for the different API 
 This section describes the overall structure and organization of the project files and directories. 
 
 See [Project Structure](/.doc/project-structure.md)
+
+## Instructions to Run and Test
+
+### 1. Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+- .NET 8 SDK (optional, only if you want to run it outside Docker).
+
+### 2. Execution (The Easy Way)
+The project is fully containerized and uses `docker-compose` to spin up the Web API alongside its dependencies (PostgreSQL, MongoDB, and Redis).
+The database configuration is completely automated, including entity framework migrations being applied automatically on startup.
+
+1. Open your terminal at the `template/backend` folder.
+2. Run the following command:
+   ```bash
+   docker-compose up -d --build
+   ```
+3. Wait a few seconds for the containers to build and start. The API will be available at port `8080`.
+
+### 3. Testing the Application
+Once the containers are running, you can interact with the API using Swagger:
+
+- **Swagger UI**: Access [http://localhost:8080/swagger](http://localhost:8080/swagger) in your browser.
+
+#### How to test the Sales API:
+1. **Create a Sale** (`POST /api/Sales`): 
+   Use the provided endpoints to create a sale. Test the business rules by sending different item quantities (e.g., `< 4`, `5`, `15`, `25`). You will observe that the API automatically calculates the 10% and 20% discounts or blocks the request (400 Bad Request) if the 20-item limit is exceeded.
+2. **Retrieve a Sale** (`GET /api/Sales/{id}`): Check the created sale and its items.
+3. **Domain Events**: You can check the Docker console logs (`docker logs ambev_developer_evaluation_webapi`) to see the CQRS Domain Events being published (e.g., `SaleCreatedEvent`, `SaleModifiedEvent`, `SaleCancelledEvent`, `ItemCancelledEvent`).
+
+#### How to test the Auth API:
+1. First, create a new user via `POST /api/Users`. Make sure to pass `status: 1` (Active) and `role: 3` (Admin).
+2. Second, use the registered email and password on `POST /api/Auth` to receive a JWT token.
